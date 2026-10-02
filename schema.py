@@ -7,14 +7,7 @@ class JobIn(BaseModel):
     job_role: str
     company_name: str
     apply_link: str
-    job_description: str
-
-class UpdateJobIn(BaseModel):
-    id: int
-    job_role: str
-    company_name: str
-    apply_link: str
-    job_description: str    
+    job_description: str   
 
 class JobOut(BaseModel):
     id: int

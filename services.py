@@ -9,12 +9,14 @@ from models import (
 from schema import (
     JobIn,
     JobOut,
-    UpdateJobIn,
     CreateJobApplicationIn,
     CreateJobApplicationOut,
 )
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy import (
+    select,
+    delete,
+)
 from db import engine
 class JobService:
 
@@ -43,17 +45,27 @@ class JobService:
             raise HTTPException(status_code=404, detail= f"No job found with id = {id}")
         return job
 
-    async def put(data:UpdateJobIn)->JobOut:
+    async def put(id:int, data:JobIn)->JobOut:
         with Session(engine) as session:
-            job = session.scalar(select(Job).where(Job.id == data.id))
+            job = session.scalar(select(Job).where(Job.id == id))
             if job is None:
-               raise HTTPException(status_code=404, detail=f"no job found with id = {id}")
+               raise HTTPException(status_code=404, detail=f"Job with id = {id} not found")
             job.job_role = data.job_role
             job.company_name = data.company_name
             job.apply_link = data.apply_link
             job.job_description = data.job_description
             session.commit()
             session.refresh(job)
-        return job                
+        return job    
+
+    async def delete(id:int)->str:
+        with Session(engine) as session:
+            job = session.scalar(select(Job).where(Job.id == id))
+            if job is None:
+                raise HTTPException(status_code=404, detail=f"Job with id = {id} not found")  
+            session.delete(job)
+            session.commit()
+          
+            return f"Deleted job with id {id}"          
         
         
