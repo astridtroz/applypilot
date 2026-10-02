@@ -3,7 +3,15 @@ from pydantic import (
     HttpUrl,
     Field
 )
-class (BaseModel)
+class CreateJobIn(BaseModel):
+    job_role: str
+    company_name: str
+    apply_link: str
+    job_description: str
+
+class CreateJobOut(CreateJobIn):
+    id: int
+    
 class CreateJobApplicationIn(BaseModel):
     job_link : HttpUrl = Field( max_length= 255)
     job_description:str 

@@ -1,24 +1,18 @@
 from fastapi import FastAPI
-from models import JobApplication
 from schema import (
+    CreateJobIn,
+    CreateJobOut,
     CreateJobApplicationIn,
     CreateJobApplicationOut,
 )
-from sqlalchemy.orm import Session
-from db import engine
+from services import (
+    JobService
+)
 
 app = FastAPI()
 
 @app.post("/jobs" , status_code=201)
-def create( data: CreateJobApplicationIn)-> CreateJobApplicationOut:
-    with Session(engine) as session:
-        application = JobApplication(
-            status = "pending",
-            **data.model_dump(mode='json')
-        )
-        session.add(application)
-        session.commit()
-        session.refresh(application)
+async def create( data: CreateJobIn)-> CreateJobOut:
+    return await JobService.create(data=data)
 
-    return application
-    
+@
