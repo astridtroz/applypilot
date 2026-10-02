@@ -9,7 +9,7 @@ from db import engine
 
 app = FastAPI()
 
-@app.post("/jobs")
+@app.post("/jobs" , status_code=201)
 def create( data: CreateJobApplicationIn)-> CreateJobApplicationOut:
     with Session(engine) as session:
         application = JobApplication(
