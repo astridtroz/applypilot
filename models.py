@@ -20,7 +20,7 @@ class Job(Base):
     job_description: Mapped[str] = mapped_column(String)
     apply_link: Mapped[str] = mapped_column(String)
     
-class JobApplication(Base):
+class Application(Base):
     __tablename__ = "job_application"
     
     id: Mapped[int] = mapped_column(primary_key=True)

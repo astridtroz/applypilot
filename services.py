@@ -1,21 +1,19 @@
 from fastapi import (
-    FastAPI,
     HTTPException,
 )
 from models import (
     Job,
-    JobApplication,
+    Application,
 )
 from schema import (
     JobIn,
     JobOut,
-    CreateJobApplicationIn,
-    CreateJobApplicationOut,
+    ApplicationOut,
+    ApplicationIn,
 )
 from sqlalchemy.orm import Session
 from sqlalchemy import (
     select,
-    delete,
 )
 from db import engine
 class JobService:
@@ -68,4 +66,64 @@ class JobService:
           
             return f"Deleted job with id {id}"          
         
-        
+class ApplicationService:
+
+    async def create(job_id:int)->ApplicationOut:
+        with Session(engine) as session:
+            job = session.scalar(select(Job).where(Job.id == job_id))
+            
+            if job is None:
+                raise HTTPException(status_code=404, detail= f"No job found with id = {job_id}")
+
+            application = session.scalar(select(Application).where((Application.job_id == job_id)))
+            if application is not None:
+                raise HTTPException(status_code=409, detail="already applied")
+            
+            application = Application(job_id = job_id, status = "applied")
+            session.add(application)
+            session.commit()
+            session.refresh(application)
+        return application
+    
+    async def get()-> list[ApplicationOut]:
+        with Session(engine) as session:
+            applications = session.scalars(select(Application)).all()
+
+        return applications
+
+    async def get_by_id(id:int)->ApplicationOut:
+        with Session(engine) as session:
+            application = session.scalar(select(Application).where(Application.id == id))
+
+        if application is None:
+            raise HTTPException(status_code=404, detail= f"No Application found with id = {id}")
+        return application
+
+    async def get_by_job_id(job_id:int)->ApplicationOut:
+        with Session(engine) as session:
+            application = session.scalar(select(Application).where(Application.job_id == job_id))
+
+        if application is None:
+            raise HTTPException(status_code=404, detail= f"No Application found with job id = {job_id}")
+        return application
+
+    async def put(id:int, data:ApplicationIn)->ApplicationOut:
+        with Session(engine) as session:
+            application = session.scalar(select(Application).where(Application.id == id))
+            if application is None:
+               raise HTTPException(status_code=404, detail=f"Application with id = {id} not found")
+            application.status = data.status
+            session.commit()
+            session.refresh(application)
+        return application    
+
+    async def delete(id:int)->str:
+        with Session(engine) as session:
+            application = session.scalar(select(Application).where(Application.id == id))
+            if application is None:
+                raise HTTPException(status_code=404, detail=f"application with id = {id} not found")  
+            session.delete(application)
+            session.commit()
+          
+            return f"Deleted application with id {id}"          
+ 
